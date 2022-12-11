@@ -1,0 +1,1 @@
+# The Fuel Token Standard
