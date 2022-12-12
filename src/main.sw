@@ -9,10 +9,10 @@ use std::{
     revert::require,
     storage::{
         StorageMap
-    }
+    },
 };
 
-/**
+/*
     The Token Standard for the Fuel Network
 */
 
@@ -37,9 +37,23 @@ abi FRC20 {
     #[storage(read)]
     fn balance_of(address: Address) -> u64;
 
+    /// Mint tokens
+    #[storage(read, write)]
+    fn mint(address: Address, amount: u64) -> bool;
 }
 
+
+/*
+    Utils
+*/
 const ZERO_ADDRESS = 0x0000000000000000000000000000000000000000000000000000000000000000;
+
+pub fn get_sender() -> Address {
+    match msg_sender().unwrap() {
+        Identity::Address(addr) => addr,
+        _ => revert(0),
+    }
+}
 
 pub struct FRC20Config {
     name: str[16],
@@ -53,13 +67,14 @@ enum Error {
     SenderNotOwner: (),
 }
 
+
 storage {
     config__: FRC20Config = FRC20Config {
         name: "                ",
         symbol: "        ",
         decimals: 1u8 // 8 decimals by default
     },
-    owner__: Address = Address { value: ZERO_ADDRESS },
+    owner__: Address = Address { value: ZERO_ADDRESS, },
     balances__: StorageMap<Address, u64> = StorageMap{},
     total_supply__: u64 = 0u64
 }
@@ -98,5 +113,19 @@ impl FRC20 for Contract {
     #[storage(read)]
     fn balance_of(address: Address) -> u64 {
         storage.balances__.get(address)
+    }
+
+    #[storage(read, write)]
+    fn mint(
+        address: Address,
+        amount: u64
+    ) -> bool {
+        require(get_sender() == storage.owner__, Error::SenderNotOwner);
+        require(address.into() != ZERO_ADDRESS, Error::AddressIsZero);
+
+        storage.balances__.insert(address, storage.balances__.get(address) + amount);
+        storage.total_supply__ += amount;
+
+        true
     }
 }
