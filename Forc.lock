@@ -3,7 +3,12 @@ name = 'core'
 source = 'path+from-root-F3A20BA79C738864'
 
 [[package]]
-name = 'fuel-token-standard'
+name = 'fungible'
+source = 'member'
+dependencies = ['std']
+
+[[package]]
+name = 'nft'
 source = 'member'
 dependencies = ['std']
 

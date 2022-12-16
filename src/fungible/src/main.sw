@@ -16,14 +16,14 @@ use std::{
     The Token Standard for the Fuel Network
 */
 
-abi FRC20 {
+abi FungibleCore {
     /// Initialize
     #[storage(read, write)]
-    fn initialize(config: FRC20Config, owner: Address);
+    fn initialize(config: FungibleCoreConfig, owner: Address);
 
     /// Get the token config
     #[storage(read)]
-    fn config() -> FRC20Config;
+    fn config() -> FungibleCoreConfig;
 
     /// Get the owner address
     #[storage(read)]
@@ -55,7 +55,7 @@ pub fn get_sender() -> Address {
     }
 }
 
-pub struct FRC20Config {
+pub struct FungibleCoreConfig {
     name: str[16],
     symbol: str[8],
     decimals: u8
@@ -69,22 +69,22 @@ enum Error {
 
 
 storage {
-    config__: FRC20Config = FRC20Config {
+    config__: FungibleCoreConfig = FungibleCoreConfig {
         name: "                ",
         symbol: "        ",
         decimals: 1u8 // 8 decimals by default
     },
-    owner__: Address = Address { value: ZERO_ADDRESS, },
+    owner__: Address = Address::from(ZERO_ADDRESS),
     balances__: StorageMap<Address, u64> = StorageMap{},
     total_supply__: u64 = 0u64
 }
 
 
-impl FRC20 for Contract {
+impl FungibleCore for Contract {
     /// Initialize
     #[storage(read, write)]
     fn initialize(
-        config: FRC20Config,
+        config: FungibleCoreConfig,
         owner: Address
     ) {
         require(storage.owner__.into() == ZERO_ADDRESS, Error::AlreadyInitialized);
@@ -96,7 +96,7 @@ impl FRC20 for Contract {
 
 
     #[storage(read)]
-    fn config() -> FRC20Config {
+    fn config() -> FungibleCoreConfig {
         storage.config__
     }
 
