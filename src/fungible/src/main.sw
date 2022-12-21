@@ -37,9 +37,16 @@ abi FungibleCore {
     #[storage(read)]
     fn balance_of(address: Address) -> u64;
 
+    /// Approve an address to spend the caller's tokens
+    #[storage(write)]
+    fn approve(spender: Address, amount: u64) -> bool;
+
     /// Mint tokens
     #[storage(read, write)]
     fn mint(address: Address, amount: u64) -> bool;
+
+    #[storage(read, write)]
+    fn burn(address: Address,amount: u64) -> bool;
 }
 
 
@@ -65,6 +72,7 @@ enum Error {
     AlreadyInitialized: (),
     AddressIsZero: (),
     SenderNotOwner: (),
+    SenderNotAuthorized: ()
 }
 
 
@@ -76,6 +84,7 @@ storage {
     },
     owner__: Address = Address::from(ZERO_ADDRESS),
     balances__: StorageMap<Address, u64> = StorageMap{},
+    allowances__: StorageMap<Address, (Address, u64)> = StorageMap{},
     total_supply__: u64 = 0u64
 }
 
@@ -83,10 +92,7 @@ storage {
 impl FungibleCore for Contract {
     /// Initialize
     #[storage(read, write)]
-    fn initialize(
-        config: FungibleCoreConfig,
-        owner: Address
-    ) {
+    fn initialize(config: FungibleCoreConfig, owner: Address) {
         require(storage.owner__.into() == ZERO_ADDRESS, Error::AlreadyInitialized);
         require(owner.into() != ZERO_ADDRESS, Error::AddressIsZero);
 
@@ -115,11 +121,19 @@ impl FungibleCore for Contract {
         storage.balances__.get(address)
     }
 
+    #[storage(write)]
+    fn approve(spender: Address, amount: u64) -> bool {
+        let sender = get_sender();
+        require(sender.into() != ZERO_ADDRESS, Error::AddressIsZero);
+        require(spender.into() != ZERO_ADDRESS, Error::AddressIsZero);
+
+        storage.allowances__.insert(sender, (spender, amount));
+
+        true
+    }
+
     #[storage(read, write)]
-    fn mint(
-        address: Address,
-        amount: u64
-    ) -> bool {
+    fn mint(address: Address, amount: u64) -> bool {
         require(get_sender() == storage.owner__, Error::SenderNotOwner);
         require(address.into() != ZERO_ADDRESS, Error::AddressIsZero);
 
@@ -127,5 +141,15 @@ impl FungibleCore for Contract {
         storage.total_supply__ += amount;
 
         true
+    }
+
+    #[storage(read, write)]
+    fn burn(address: Address,amount: u64) -> bool {
+        require(address.into() != ZERO_ADDRESS, Error::AddressIsZero);
+        require(get_sender() == address, Error::SenderNotAuthorized);
+        
+        storage.balances__.insert(address, storage.balances__.get(address) - amount);
+
+        true 
     }
 }
