@@ -1,15 +1,13 @@
-
 use fuels::{
-    prelude::*, 
-    contracts::CallResponse,
+    prelude::*,
+    programs::call_response::FuelCallResponse,
     tx::{Address, AssetId, ContractId}
 };
 
 // Load abi from json
-abigen!(Contract(
-    name = "TestFungible",
-    abi = "src/fungible/out/debug/fungible-abi.json"
-));
+abigen!(
+    Contract(name = "TestFungible", abi = "src/fungible/out/debug/fungible-abi.json")
+);
 
 pub struct Wallets {
     pub wallet_owner: WalletUnlocked,
@@ -27,7 +25,7 @@ pub mod Calls {
         decimals: u8,
         amount: u64,
         deployer: Address
-    ) -> Result<CallResponse<()>> {
+    ) -> Result<FuelCallResponse<()>> {
         let mut name = name.to_string();
         let mut symbol = symbol.to_string();
         name.push_str(" ".repeat(16 - name.len()).as_str());
@@ -47,43 +45,43 @@ pub mod Calls {
             .await
     }
 
-    pub async fn get_config(contract: &TestFungible) -> Result<CallResponse<FungibleCoreConfig>> {
+    pub async fn get_config(contract: &TestFungible) -> Result<FuelCallResponse<FungibleCoreConfig>> {
         contract.methods().config().call().await
     }
 
-    pub async fn get_owner(contract: &TestFungible) -> Result<CallResponse<Address>> {
+    pub async fn get_owner(contract: &TestFungible) -> Result<FuelCallResponse<Address>> {
         contract.methods().owner().call().await
     }
 
-    pub async fn get_total_supply(contract: &TestFungible) -> Result<CallResponse<u64>> {
+    pub async fn get_total_supply(contract: &TestFungible) -> Result<FuelCallResponse<u64>> {
         contract.methods().total_supply().call().await
     }
 
-    pub async fn get_balance(contract: &TestFungible, address: Address) -> Result<CallResponse<u64>> {
+    pub async fn get_balance(contract: &TestFungible, address: Address) -> Result<FuelCallResponse<u64>> {
         contract.methods().balance_of(address).call().await
     }
 
-    pub async fn get_allowance(contract: &TestFungible, owner: Address, spender: Address) -> Result<CallResponse<u64>> {
+    pub async fn get_allowance(contract: &TestFungible, owner: Address, spender: Address) -> Result<FuelCallResponse<u64>> {
         contract.methods().allowance(owner, spender).call().await
     }
 
-    pub async fn approve(contract: &TestFungible, spender: Address, amount: u64) -> Result<CallResponse<bool>> {
+    pub async fn approve(contract: &TestFungible, spender: Address, amount: u64) -> Result<FuelCallResponse<bool>> {
         contract.methods().approve(spender, amount).call().await
     }
 
-    pub async fn mint(contract: &TestFungible, spender: Address, amount: u64) -> Result<CallResponse<bool>> {
+    pub async fn mint(contract: &TestFungible, spender: Address, amount: u64) -> Result<FuelCallResponse<bool>> {
         contract.methods().mint(spender, amount).call().await
     }
 
-    pub async fn burn(contract: &TestFungible, spender: Address, amount: u64) -> Result<CallResponse<bool>> {
+    pub async fn burn(contract: &TestFungible, spender: Address, amount: u64) -> Result<FuelCallResponse<bool>> {
         contract.methods().burn(spender, amount).call().await
     }
 
-    pub async fn transfer(contract: &TestFungible, spender: Address, amount: u64) -> Result<CallResponse<bool>> {
+    pub async fn transfer(contract: &TestFungible, spender: Address, amount: u64) -> Result<FuelCallResponse<bool>> {
         contract.methods().transfer(spender, amount).call().await
     }
 
-    pub async fn transfer_from(contract: &TestFungible, from: Address, to: Address, amount: u64) -> Result<CallResponse<bool>> {
+    pub async fn transfer_from(contract: &TestFungible, from: Address, to: Address, amount: u64) -> Result<FuelCallResponse<bool>> {
         contract.methods().transfer_from(from, to, amount).call().await
     }
 }

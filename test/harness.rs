@@ -1,2 +1,2 @@
 mod fungible;
-mod nft;
+mod utils;
