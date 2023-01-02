@@ -7,6 +7,7 @@ use std::{
         msg_sender
     },
     revert::require,
+    hash::{keccak256, sha256},
     storage::{
         StorageMap
     },
@@ -37,6 +38,10 @@ abi FungibleCore {
     #[storage(read)]
     fn balance_of(address: Address) -> u64;
 
+    /// Get the amount of the owner's tokens that a spender can spend
+    #[storage(read)]
+    fn allowance(owner: Address, spender: Address) -> u64;
+
     /// Approve an address to spend the caller's tokens
     #[storage(write)]
     fn approve(spender: Address, amount: u64) -> bool;
@@ -45,8 +50,17 @@ abi FungibleCore {
     #[storage(read, write)]
     fn mint(address: Address, amount: u64) -> bool;
 
+    /// Burn tokens
     #[storage(read, write)]
     fn burn(address: Address,amount: u64) -> bool;
+
+    /// Transfer tokens
+    #[storage(read, write)]
+    fn transfer(address: Address, amount: u64) -> bool;
+
+    /// Transfer tokens from one address to another via an approved intermediary
+    #[storage(read, write)]
+    fn transfer_from(from: Address, to: Address, amount: u64) -> bool;
 }
 
 
@@ -68,13 +82,24 @@ pub struct FungibleCoreConfig {
     decimals: u8
 }
 
+pub struct HashableAllowance {
+    owner: Address,
+    spender: Address
+    
+}
+
 enum Error {
     AlreadyInitialized: (),
     AddressIsZero: (),
     SenderNotOwner: (),
-    SenderNotAuthorized: ()
+    SenderNotAuthorized: (),
+    InsufficientAllowance: ()
 }
 
+
+pub fn hash_allowance(owner: Address, spender: Address) -> b256 {
+    keccak256(HashableAllowance { owner, spender })
+}
 
 storage {
     config__: FungibleCoreConfig = FungibleCoreConfig {
@@ -84,7 +109,7 @@ storage {
     },
     owner__: Address = Address::from(ZERO_ADDRESS),
     balances__: StorageMap<Address, u64> = StorageMap{},
-    allowances__: StorageMap<Address, (Address, u64)> = StorageMap{},
+    allowances__: StorageMap<b256, u64> = StorageMap{},
     total_supply__: u64 = 0u64
 }
 
@@ -121,13 +146,20 @@ impl FungibleCore for Contract {
         storage.balances__.get(address)
     }
 
+    #[storage(read)]
+    fn allowance(owner: Address, spender: Address) -> u64 {
+        let hash = hash_allowance(owner, spender);
+        storage.allowances__.get(hash)
+    }
+
     #[storage(write)]
     fn approve(spender: Address, amount: u64) -> bool {
-        let sender = get_sender();
-        require(sender.into() != ZERO_ADDRESS, Error::AddressIsZero);
+        let owner = get_sender();
+        require(owner.into() != ZERO_ADDRESS, Error::AddressIsZero);
         require(spender.into() != ZERO_ADDRESS, Error::AddressIsZero);
 
-        storage.allowances__.insert(sender, (spender, amount));
+        let hash = hash_allowance(owner, spender);
+        storage.allowances__.insert(hash, amount);
 
         true
     }
@@ -151,5 +183,33 @@ impl FungibleCore for Contract {
         storage.balances__.insert(address, storage.balances__.get(address) - amount);
 
         true 
+    }
+
+    #[storage(read, write)]
+    fn transfer(address: Address, amount: u64) -> bool {
+        let sender = get_sender();
+        require(address.into() != ZERO_ADDRESS, Error::AddressIsZero);
+        require(sender == address, Error::SenderNotAuthorized);
+
+        storage.balances__.insert(address, storage.balances__.get(address) - amount);
+        storage.balances__.insert(sender, storage.balances__.get(sender) + amount);
+
+        true
+    }
+
+    #[storage(read, write)]
+    fn transfer_from(from: Address, to: Address, amount: u64) -> bool {
+        let spender = get_sender();
+        require(from.into() != ZERO_ADDRESS, Error::AddressIsZero);
+
+        // Ensure that the sender has enough allowance
+        let hash = hash_allowance(from, spender);
+        require(storage.allowances__.get(hash) >= amount, Error::InsufficientAllowance);
+
+        storage.balances__.insert(from, storage.balances__.get(from) - amount);
+        storage.balances__.insert(to, storage.balances__.get(to) + amount);
+        storage.allowances__.insert(hash, storage.allowances__.get(hash) - amount);
+
+        true
     }
 }
