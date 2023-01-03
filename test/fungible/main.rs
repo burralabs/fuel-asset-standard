@@ -1,4 +1,3 @@
-
 use fuels::prelude::*;
 use crate::utils::{main::*, numbers::*};
 
@@ -7,6 +6,10 @@ use crate::utils::{main::*, numbers::*};
 async fn main() {
     // Setup contracts
     let (deployed, wallets) = setup::setup().await;
+
+    let owner = Address::from(wallets.owner.address().clone());
+    let wallet1 = Address::from(wallets.wallet1.address().clone());
+    let wallet2 = Address::from(wallets.wallet2.address().clone());
 
     let name = "Test Token";
     let symbol = "TT";
@@ -20,7 +23,7 @@ async fn main() {
         name,
         symbol,
         decimals,
-        Address::from(wallets.owner.address().clone())
+        owner
     ).await.unwrap();
     println!("✅ Initialized contract");
 
@@ -30,7 +33,7 @@ async fn main() {
     assert_eq!(result.value.decimals, decimals);
 
     let owner_result = calls::get_owner(&deployed).await.unwrap();
-    assert_eq!(owner_result.value, Address::from(wallets.owner.address().clone()));
+    assert_eq!(owner_result.value, owner);
 
 
     ///
@@ -38,37 +41,28 @@ async fn main() {
     ///
     calls::mint(
         &deployed,
-        Address::from(wallets.owner.address().clone()),
+        owner,
         mint_amount
     ).await.unwrap();
     println!("✅ Tokens minted");
 
-    let balance_result = calls::get_balance(
-        &deployed, 
-        Address::from(wallets.owner.address().clone())
-    ).await.unwrap();
+    let balance_result = calls::get_balance(&deployed, owner).await.unwrap();
     assert_eq!(balance_result.value, mint_amount);
 
 
     ///
     /// Transfer tokens
     ///
-    let balance_before = calls::get_balance(
-        &deployed, 
-        Address::from(wallets.wallet1.address().clone())
-    ).await.unwrap();
+    let balance_before = calls::get_balance(&deployed, wallet1).await.unwrap();
     assert_eq!(balance_before.value, 0);
 
     calls::transfer(
         &deployed,
-        Address::from(wallets.wallet1.address().clone()),
+        wallet1,
         transfer_amount
     ).await.unwrap();
     println!("✅ Tokens transferred");
 
-    let balance_after = calls::get_balance(
-        &deployed, 
-        Address::from(wallets.wallet1.address().clone())
-    ).await.unwrap();
+    let balance_after = calls::get_balance(&deployed, wallet1).await.unwrap();
     assert_eq!(balance_after.value, transfer_amount);
 }
