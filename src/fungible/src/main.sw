@@ -125,7 +125,6 @@ impl FungibleCore for Contract {
         storage.owner__ = owner;
     }
 
-
     #[storage(read)]
     fn config() -> FungibleCoreConfig {
         storage.config__
@@ -186,13 +185,12 @@ impl FungibleCore for Contract {
     }
 
     #[storage(read, write)]
-    fn transfer(address: Address, amount: u64) -> bool {
+    fn transfer(to: Address, amount: u64) -> bool {
         let sender = get_sender();
-        require(address.into() != ZERO_ADDRESS, Error::AddressIsZero);
-        require(sender == address, Error::SenderNotAuthorized);
+        require(to.into() != ZERO_ADDRESS, Error::AddressIsZero);
 
-        storage.balances__.insert(address, storage.balances__.get(address) - amount);
-        storage.balances__.insert(sender, storage.balances__.get(sender) + amount);
+        storage.balances__.insert(sender, storage.balances__.get(sender) - amount);
+        storage.balances__.insert(to, storage.balances__.get(to) + amount);
 
         true
     }
