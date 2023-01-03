@@ -10,12 +10,12 @@ abigen!(
 );
 
 pub struct Wallets {
-    pub wallet_owner: WalletUnlocked,
+    pub owner: WalletUnlocked,
     pub wallet1: WalletUnlocked,
     pub wallet2: WalletUnlocked,
 }
 
-pub mod Calls {
+pub mod calls {
     use super::*;
 
     pub async fn initialize(
@@ -23,7 +23,6 @@ pub mod Calls {
         name: &str,
         symbol: &str,
         decimals: u8,
-        amount: u64,
         deployer: Address
     ) -> Result<FuelCallResponse<()>> {
         let mut name = name.to_string();
@@ -87,7 +86,7 @@ pub mod Calls {
 }
 
 
-pub mod Setup {
+pub mod setup {
     use super::*;
 
     pub async fn setup_wallets() -> Wallets {
@@ -97,21 +96,21 @@ pub mod Setup {
 
         let config = WalletsConfig::new(Some(num_wallets), Some(num_coins), Some(initial_amount));
         let wallets = launch_custom_provider_and_get_wallets(config, None, None).await;
-        let wallet_owner = wallets.get(0).unwrap().clone();
+        let owner = wallets.get(0).unwrap().clone();
         let wallet1 = wallets.get(1).unwrap().clone();
         let wallet2 = wallets.get(2).unwrap().clone();
 
         return Wallets {
-            wallet_owner,
+            owner,
             wallet1,
             wallet2,
         };
     }
 
-    pub async fn setup_fungible(wallet_owner: &WalletUnlocked) -> TestFungible {
+    pub async fn setup_fungible(owner: &WalletUnlocked) -> TestFungible {
         let fungible_id = Contract::deploy(
             "src/fungible/out/debug/fungible.bin",
-            wallet_owner,
+            owner,
             TxParameters::default(),
             StorageConfiguration::with_storage_path(Some(
                 "src/fungible/out/debug/fungible-storage_slots.json".to_string(),
@@ -120,19 +119,12 @@ pub mod Setup {
         .await
         .unwrap();
 
-        return get_token_instance(&fungible_id, wallet_owner);
+        TestFungible::new(fungible_id.clone(), owner.clone())
     }
 
     pub async fn setup() -> (TestFungible, Wallets) {
         let wallets = setup_wallets().await;
-        let token = setup_fungible(&wallets.wallet_owner).await;
+        let token = setup_fungible(&wallets.owner).await;
         return (token, wallets);
-    }
-
-    pub fn get_token_instance(
-        fungible_id: &Bech32ContractId,
-        wallet: &WalletUnlocked,
-    ) -> TestFungible {
-        return TestFungible::new(fungible_id.clone(), wallet.clone());
     }
 }
