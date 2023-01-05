@@ -87,7 +87,7 @@ impl FungibleCore for Contract {
 
 
     #[storage(read, write)]
-    fn mint(address: Identity, amount: u64) -> bool {
+    fn _mint(address: Identity, amount: u64) -> bool {
         require(get_sender() == storage.owner__, Error::SenderNotOwner);
         require(check_nonzero(address), Error::AddressIsZero);
 
@@ -99,7 +99,7 @@ impl FungibleCore for Contract {
 
 
     #[storage(read, write)]
-    fn burn(address: Identity,amount: u64) -> bool {
+    fn _burn(address: Identity,amount: u64) -> bool {
         require(check_nonzero(address), Error::AddressIsZero);
         match address {
             Identity::Address(addr) => { require(addr == get_sender(), Error::AddressIsZero); },

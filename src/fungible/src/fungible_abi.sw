@@ -88,11 +88,11 @@ abi FungibleCore {
 
     /// Mint tokens
     #[storage(read, write)]
-    fn mint(address: Identity, amount: u64) -> bool;
+    fn _mint(address: Identity, amount: u64) -> bool;
 
     /// Burn tokens
     #[storage(read, write)]
-    fn burn(address: Identity,amount: u64) -> bool;
+    fn _burn(address: Identity,amount: u64) -> bool;
 
     /// Transfer tokens
     #[storage(read, write)]
