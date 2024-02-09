@@ -1,5 +1,9 @@
-[workspace]
-members = [
-    "src/fungible",
-    "src/nft"
-]
+[project]
+authors = ["Burra Labs @vandhazel", "@jasmcaus"]
+entry = "main.sw"
+license = "MIT"
+name = "fungible"
+
+[dependencies]
+src20 = { git = "https://github.com/FuelLabs/sway-standards", tag = "v0.3.3" }
+src3 = { git = "https://github.com/FuelLabs/sway-standards", tag = "v0.3.3" }
