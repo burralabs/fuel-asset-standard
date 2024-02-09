@@ -164,11 +164,11 @@ impl FungibleAsset for Contract {
     }
 
     /*
-           ____  __  __ _          
-          / / / |  \/  (_)___  ___ 
-         / / /  | |\/| | / __|/ __|
-        / / /   | |  | | \__ \ (__ 
-       /_/_/    |_|  |_|_|___/\___|
+           ____  ____        _                      
+          / / / | __ )  __ _| | __ _ _ __   ___ ___ 
+         / / /  |  _ \ / _` | |/ _` | '_ \ / __/ _ \
+        / / /   | |_) | (_| | | (_| | | | | (_|  __/
+       /_/_/    |____/ \__,_|_|\__,_|_| |_|\___\___|
     */
     fn this_balance(sub_id: SubId) -> u64 {
         let asset_id = AssetId::new(contract_id(), sub_id);
@@ -178,5 +178,30 @@ impl FungibleAsset for Contract {
     fn get_balance(target: ContractId, sub_id: SubId) -> u64 {
         let asset_id = AssetId::new(contract_id(), sub_id);
         balance_of(target, asset_id)
+    }
+
+    /*
+           ____  _____                     __           
+          / / / |_   _| __ __ _ _ __  ___ / _| ___ _ __ 
+         / / /    | || '__/ _` | '_ \/ __| |_ / _ \ '__|
+        / / /     | || | | (_| | | | \__ \  _|  __/ |   
+       /_/_/      |_||_|  \__,_|_| |_|___/_|  \___|_|
+    */
+    fn transfer(to: Identity, sub_id: SubId, amount: u64) {
+        let asset_id = AssetId::new(contract_id(), sub_id);
+
+        transfer(to, asset_id, amount);
+    }
+
+    fn transfer_to_address(to: Address, sub_id: SubId, amount: u64) {
+        let asset_id = AssetId::new(contract_id(), sub_id);
+
+        transfer_to_address(to, asset_id, amount);
+    }
+
+    fn transfer_to_contract(to: ContractId, sub_id: SubId, amount: u64) {
+        let asset_id = AssetId::new(contract_id(), sub_id);
+
+        force_transfer_to_contract(to, asset_id, amount);
     }
 }

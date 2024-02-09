@@ -316,13 +316,21 @@ abi FungibleAsset {
     fn set_decimals(asset_id: AssetId, decimals: u8);
 
     /*
-           ____  __  __ _          
-          / / / |  \/  (_)___  ___ 
-         / / /  | |\/| | / __|/ __|
-        / / /   | |  | | \__ \ (__ 
-       /_/_/    |_|  |_|_|___/\___|
+           ____  ____        _                      
+          / / / | __ )  __ _| | __ _ _ __   ___ ___ 
+         / / /  |  _ \ / _` | |/ _` | '_ \ / __/ _ \
+        / / /   | |_) | (_| | | (_| | | | | (_|  __/
+       /_/_/    |____/ \__,_|_|\__,_|_| |_|\___\___|
     */
     /// Get the balance of sub-identifier `sub_id` for the current contract.
+    ///
+    /// # Additional Information
+    ///
+    /// This method is a convenience method only used to query the balance of the contract's native assets,
+    /// owned by the current contract (`contract_id()`)
+    ///
+    /// This method is not used to query the balance of an EOA on Fuel because EOAs follow the UTXO model, 
+    /// while contracts follow the account model (i.e. EOAs don't "have" balances)
     ///
     /// # Arguments
     ///
@@ -346,6 +354,14 @@ abi FungibleAsset {
 
     /// Get the balance of sub-identifier `sub_id` for the contract at 'target'.
     ///
+    /// # Additional Information
+    ///
+    /// This method is a convenience method only used to query the balance of the contract's native assets,
+    /// owned by a particular CONTRACT (identifiable by `target`).
+    ///
+    /// This method is not used to query the balance of an EOA on Fuel because EOAs follow the UTXO model, 
+    /// while contracts follow the account model (i.e. EOAs don't "have" balances)
+    ///
     /// # Arguments
     ///
     /// * `target`: [ContractId] - The contract that contains the `asset_id`.
@@ -366,4 +382,60 @@ abi FungibleAsset {
     /// }
     /// ```
     fn get_balance(target: ContractId, sub_id: SubId) -> u64;
+
+    /*
+           ____  _____                     __           
+          / / / |_   _| __ __ _ _ __  ___ / _| ___ _ __ 
+         / / /    | || '__/ _` | '_ \/ __| |_ / _ \ '__|
+        / / /     | || | | (_| | | | \__ \  _|  __/ |   
+       /_/_/      |_||_|  \__,_|_| |_|___/_|  \___|_|
+    */
+    /// Transfer `amount` coins of the sub-identifier `sub_id` and send them
+    /// to `to` by calling either `force_transfer_to_contract` or
+    /// `transfer_to_address`, depending on the type of `Identity`.
+    ///
+    /// # Additional Information
+    ///
+    /// This method is a convenience method only used to transfer native assets belonging to the contract, 
+    /// and identifiable by the `sub_id` sub-identifier.
+    ///
+    /// If the `to` Identity is a contract this may transfer coins to the contract even with no way to retrieve them
+    /// (i.e. no withdrawal functionality on receiving contract), possibly leading
+    /// to the **_PERMANENT LOSS OF COINS_** if not used with care.
+    ///
+    /// # Arguments
+    ///
+    /// * `to`: [Identity] - The recipient identity.
+    /// * `asset_id`: [AssetId] - The asset to transfer.
+    /// * `amount`: [u64] - The amount of coins to transfer.
+    ///
+    /// # Reverts
+    ///
+    /// * When `amount` is greater than the contract balance for `asset_id`.
+    /// * When `amount` is equal to zero.
+    /// * When there are no free variable outputs when transferring to an `Address`.
+    ///
+    /// # Examples
+    ///
+    /// ```sway
+    /// use std::{constants::{BASE_ASSET_ID, ZERO_B256}, asset::transfer};
+    ///
+    /// fn foo() {
+    ///     let to_address = Identity::Address(Address::from(ZERO_B256));
+    ///     let to_contract_id = Identity::ContractId(ContractId::from(ZERO_B256));
+    ///     transfer(to_address, BASE_ASSET_ID, 500);
+    ///     transfer(to_contract_id, BASE_ASSET_ID, 500);
+    /// }
+    /// ```
+    fn transfer(to: Identity, sub_id: SubId, amount: u64);
+    fn transfer_to_address(
+        to: Address,
+        sub_id: SubId,
+        amount: u64
+    );
+    fn transfer_to_contract(
+        to: ContractId,
+        sub_id: SubId,
+        amount: u64
+    );
 }
