@@ -6,10 +6,6 @@ mod fungible_abi;
 
 use std::{
     asset::*,
-    auth::{
-        AuthError,
-        msg_sender,
-    },
     call_frames::contract_id,
     context::{this_balance, balance_of},
     hash::{

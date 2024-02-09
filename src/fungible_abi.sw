@@ -2,21 +2,14 @@
 library;
 
 use std::{
-    auth::{
-        AuthError,
-        msg_sender,
-    },
     hash::{
-        keccak256,
+        Hash,
         sha256,
     },
     revert::require,
     storage::storage_string::*,
     string::String,
 };
-
-pub const ZERO = 0x0000000000000000000000000000000000000000000000000000000000000000;
-pub const ZERO_ADDRESS = Address::from(ZERO);
 
 abi FungibleAsset {
     /*
