@@ -6,4 +6,4 @@ name = "fungible"
 
 [dependencies]
 src20 = { git = "https://github.com/FuelLabs/sway-standards", tag = "v0.3.3" }
-src3 = { git = "https://github.com/FuelLabs/sway-standards", tag = "v0.3.3" }
+src3  = { git = "https://github.com/FuelLabs/sway-standards", tag = "v0.3.3" }

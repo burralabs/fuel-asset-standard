@@ -2,3 +2,4 @@ out
 target
 .DS_Store
 *.lock
+test

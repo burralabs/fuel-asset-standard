@@ -201,3 +201,4 @@ impl FungibleAsset for Contract {
         force_transfer_to_contract(to, asset_id, amount);
     }
 }
+
