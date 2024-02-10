@@ -1,9 +1,24 @@
 # The Fuel Asset Standard
 
-This represents an implementation (with additions) to the [SRC20 Native Assets](https://github.com/FuelLabs/sway-standards/blob/master/standards/src20-native-asset) and [SRC3 Mint and Burn](https://github.com/FuelLabs/sway-standards/blob/master/standards/src3-mint-burn) standards on the Fuel Network.
+This represents an unofficial implementation (with additions) to the [SRC20 Native Assets](https://github.com/FuelLabs/sway-standards/blob/master/standards/src20-native-asset) and [SRC3 Mint and Burn](https://github.com/FuelLabs/sway-standards/blob/master/standards/src3-mint-burn) standards on the Fuel Network.
 
 This includes the methods as defined in the SRC20 and SRC3 specs with some convenience methods to query balances and transfer assets for the contract.
 
+## Usage
+
+You can import either the `abi` or the implementation or both by adding the following to your project's `Forc.toml` file under `[dependencies]`:
+```toml
+[dependencies]
+# Import just the abi
+fungible_abi = { git = "https://github.com/burralabs/fuel-asset-standard" }
+# import the implementation too
+fungible = { git = "https://github.com/burralabs/fuel-asset-standard" }
+```
+
+And you may then use the `FungibleAsset` abi in your Sway project like so:
+```sway
+use fungible_abi::FungibleAsset;
+```
 
 ## Single & Multi Native Assets
 
