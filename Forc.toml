@@ -1,9 +1,5 @@
-[project]
-authors = ["Burra Labs @vandhazel", "@jasmcaus"]
-entry = "main.sw"
-license = "Apache 2.0"
-name = "fungible"
-
-[dependencies]
-src20 = { git = "https://github.com/FuelLabs/sway-standards", tag = "v0.3.3" }
-src3  = { git = "https://github.com/FuelLabs/sway-standards", tag = "v0.3.3" }
+[workspace]
+members = [
+    "contracts/fungible-abi",
+    "contracts/fungible",
+]
