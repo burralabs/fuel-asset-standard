@@ -202,3 +202,134 @@ impl FungibleAsset for Contract {
     }
 }
 
+
+/*
+    From: https://github.com/FuelLabs/sway-applications/blob/master/native-assets/native-asset/
+*/
+#[test]
+fn test_mint() {
+    use std::constants::ZERO_B256;
+    let fungible_abi = abi(FungibleAsset, CONTRACT_ID);
+    let recipient = Identity::ContractId(ContractId::from(CONTRACT_ID));
+    let sub_id = ZERO_B256;
+    let asset_id = AssetId::new(ContractId::from(CONTRACT_ID), sub_id);
+
+    assert(balance_of(ContractId::from(CONTRACT_ID), asset_id) == 0);
+    fungible_abi.mint(recipient, sub_id, 100);
+    assert(balance_of(ContractId::from(CONTRACT_ID), asset_id) == 100);
+}
+
+#[test]
+fn test_burn() {
+    use std::constants::ZERO_B256;
+    let fungible_abi = abi(FungibleAsset, CONTRACT_ID);
+    let recipient = Identity::ContractId(ContractId::from(CONTRACT_ID));
+    let sub_id = ZERO_B256;
+    let asset_id = AssetId::new(ContractId::from(CONTRACT_ID), sub_id);
+    fungible_abi.mint(recipient, sub_id, 100);
+    assert(balance_of(ContractId::from(CONTRACT_ID), asset_id) == 100);
+    fungible_abi.burn(sub_id, 100);
+    assert(balance_of(ContractId::from(CONTRACT_ID), asset_id) == 0);
+}
+
+#[test]
+fn test_total_assets() {
+    let fungible_abi = abi(FungibleAsset, CONTRACT_ID);
+    let recipient = Identity::ContractId(ContractId::from(CONTRACT_ID));
+    let sub_id1 = 0x0000000000000000000000000000000000000000000000000000000000000001;
+    let sub_id2 = 0x0000000000000000000000000000000000000000000000000000000000000002;
+
+    assert(fungible_abi.total_assets() == 0);
+    fungible_abi.mint(recipient, sub_id1, 100);
+    assert(fungible_abi.total_assets() == 1);
+    fungible_abi.mint(recipient, sub_id2, 100);
+    assert(fungible_abi.total_assets() == 2);
+}
+
+#[test]
+fn test_total_supply() {
+    use std::constants::ZERO_B256;
+    let fungible_abi = abi(FungibleAsset, CONTRACT_ID);
+    let recipient = Identity::ContractId(ContractId::from(CONTRACT_ID));
+    let sub_id = ZERO_B256;
+    let asset_id = AssetId::new(ContractId::from(CONTRACT_ID), sub_id);
+
+    assert(fungible_abi.total_supply(asset_id).is_none());
+    fungible_abi.mint(recipient, sub_id, 100);
+    assert(fungible_abi.total_supply(asset_id).unwrap() == 100);
+}
+
+#[test]
+fn test_name() {
+    use std::constants::ZERO_B256;
+    let fungible_abi = abi(FungibleAsset, CONTRACT_ID);
+    let sub_id = ZERO_B256;
+    let asset_id = AssetId::new(ContractId::from(CONTRACT_ID), sub_id);
+    let name = String::from_ascii_str("Burra Labs Asset");
+
+    assert(fungible_abi.name(asset_id).is_none());
+    fungible_abi.set_name(asset_id, name);
+    assert(fungible_abi.name(asset_id).unwrap().as_bytes() == name.as_bytes());
+}
+
+#[test(should_revert)]
+fn test_revert_set_name_twice() {
+    use std::constants::ZERO_B256;
+    let fungible_abi = abi(FungibleAsset, CONTRACT_ID);
+    let sub_id = ZERO_B256;
+    let asset_id = AssetId::new(ContractId::from(CONTRACT_ID), sub_id);
+    let name = String::from_ascii_str("Burra Labs Asset");
+
+    fungible_abi.set_name(asset_id, name);
+    fungible_abi.set_name(asset_id, name);
+}
+
+#[test]
+fn test_symbol() {
+    use std::constants::ZERO_B256;
+    let fungible_abi = abi(FungibleAsset, CONTRACT_ID);
+    let sub_id = ZERO_B256;
+    let asset_id = AssetId::new(ContractId::from(CONTRACT_ID), sub_id);
+    let symbol = String::from_ascii_str("BURRA");
+
+    assert(fungible_abi.symbol(asset_id).is_none());
+    fungible_abi.set_symbol(asset_id, symbol);
+    assert(fungible_abi.symbol(asset_id).unwrap().as_bytes() == symbol.as_bytes());
+}
+
+#[test(should_revert)]
+fn test_revert_set_symbol_twice() {
+    use std::constants::ZERO_B256;
+    let fungible_abi = abi(FungibleAsset, CONTRACT_ID);
+    let sub_id = ZERO_B256;
+    let asset_id = AssetId::new(ContractId::from(CONTRACT_ID), sub_id);
+    let symbol = String::from_ascii_str("BURRA");
+
+    fungible_abi.set_symbol(asset_id, symbol);
+    fungible_abi.set_symbol(asset_id, symbol);
+}
+
+#[test]
+fn test_decimals() {
+    use std::constants::ZERO_B256;
+    let fungible_abi = abi(FungibleAsset, CONTRACT_ID);
+    let sub_id = ZERO_B256;
+    let asset_id = AssetId::new(ContractId::from(CONTRACT_ID), sub_id);
+    let decimals = 8u8;
+
+    assert(fungible_abi.decimals(asset_id).is_none());
+    fungible_abi.set_decimals(asset_id, decimals);
+    assert(fungible_abi.decimals(asset_id).unwrap() == decimals);
+}
+
+#[test(should_revert)]
+fn test_revert_set_decimals_twice() {
+    use std::constants::ZERO_B256;
+    let fungible_abi = abi(FungibleAsset, CONTRACT_ID);
+    let sub_id = ZERO_B256;
+    let asset_id = AssetId::new(ContractId::from(CONTRACT_ID), sub_id);
+    let decimals = 8u8;
+
+    fungible_abi.set_decimals(asset_id, decimals);
+    fungible_abi.set_decimals(asset_id, decimals);
+}
